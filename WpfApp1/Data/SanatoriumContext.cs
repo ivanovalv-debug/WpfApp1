@@ -5,6 +5,7 @@ using WpfApp1.Models;
 
 namespace WpfApp1.Data;
 
+
 public partial class SanatoriumContext : DbContext
 {
     public SanatoriumContext()

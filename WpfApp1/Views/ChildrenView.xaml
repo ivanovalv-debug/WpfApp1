@@ -1,0 +1,63 @@
+﻿<UserControl x:Class="WpfApp1.Views.ChildrenView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="500" d:DesignWidth="800">
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Text="🧒 Дети" FontSize="20" FontWeight="Bold" Margin="0,0,0,10"/>
+
+        <GroupBox Grid.Row="0" Header="Информация" Margin="0,30,0,10">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Margin="5">
+                    <TextBlock Text="ФИО ребёнка:"/>
+                    <TextBox Text="{Binding SelectedChild.Фио, UpdateSourceTrigger=PropertyChanged}"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Margin="5">
+                    <TextBlock Text="Родитель:"/>
+                    <!-- Привязка к списку родителей, значение ID сохраняется в FkРодитель -->
+                    <ComboBox ItemsSource="{Binding ParentsList}" 
+                              DisplayMemberPath="Фио" 
+                              SelectedValuePath="Id"
+                              SelectedValue="{Binding SelectedChild.FkРодитель, UpdateSourceTrigger=PropertyChanged}"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="0" Grid.ColumnSpan="2" Margin="5">
+                    <TextBlock Text="Мед. документы:"/>
+                    <TextBox Text="{Binding SelectedChild.МедДокументы}" Height="50" AcceptsReturn="True"/>
+                </StackPanel>
+            </Grid>
+        </GroupBox>
+
+        <DataGrid Grid.Row="1" ItemsSource="{Binding ChildrenList}" 
+                  SelectedItem="{Binding SelectedChild}"
+                  AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="ФИО" Binding="{Binding Фио}" Width="*"/>
+                <!-- Отображаем имя родителя через навигацию -->
+                <DataGridTextColumn Header="Родитель" Binding="{Binding FkРодительNavigation.Фио}" Width="150"/>
+                <DataGridTextColumn Header="Дата рождения" Binding="{Binding ДатаРождения}" Width="120"/>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,10,0,0">
+            <Button Content="💾 Добавить" Command="{Binding AddCommand}" Width="100" Margin="5"/>
+            <Button Content="✏️ Изменить" Command="{Binding UpdateCommand}" Width="100" Margin="5"/>
+            <Button Content="🗑️ Удалить" Command="{Binding DeleteCommand}" Width="100" Margin="5"/>
+            <Button Content="🔄 Обновить" Command="{Binding LoadDataCommand}" Width="100" Margin="5"/>
+        </StackPanel>
+    </Grid>
+</UserControl>

@@ -9,7 +9,7 @@ public partial class Ребенок
 
     public string Фио { get; set; } = null!;
 
-    public DateOnly ДатаРождения { get; set; }
+    public DateTime ДатаРождения { get; set; }
 
     public string? МедДокументы { get; set; }
 

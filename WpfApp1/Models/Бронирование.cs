@@ -15,7 +15,7 @@ public partial class Бронирование
 
     public string Статус { get; set; } = null!;
 
-    public DateOnly ДатаОформления { get; set; }
+    public DateTime ДатаОформления { get; set; }
 
     public virtual Люди FkОператорNavigation { get; set; } = null!;
 

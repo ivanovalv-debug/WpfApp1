@@ -7,9 +7,9 @@ public partial class Смены
 {
     public int Id { get; set; }
 
-    public DateOnly ДатаНачала { get; set; }
+    public DateTime ДатаНачала { get; set; }
 
-    public DateOnly ДатаОкончания { get; set; }
+    public DateTime ДатаОкончания { get; set; }
 
     public decimal Стоимость { get; set; }
 
