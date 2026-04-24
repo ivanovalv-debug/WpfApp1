@@ -1,0 +1,46 @@
+﻿<UserControl x:Class="WpfApp1.Views.ParentView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" 
+                   Text="👨‍👩‍ Мои дети" 
+                   FontSize="24" 
+                   FontWeight="Bold" 
+                   Margin="0,0,0,20"/>
+
+        <TabControl Grid.Row="1">
+            <!-- Вкладка: Мои дети -->
+            <TabItem Header="🧒 Мои дети">
+                <DataGrid ItemsSource="{Binding MyChildren}" 
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          CanUserAddRows="False">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="ФИО" Binding="{Binding Фио}" Width="*"/>
+                        <DataGridTextColumn Header="Дата рождения" Binding="{Binding ДатаРождения}" Width="150"/>
+                        <DataGridTextColumn Header="Мед. документы" Binding="{Binding МедДокументы}" Width="200"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </TabItem>
+
+            <!-- Вкладка: Мои бронирования -->
+            <TabItem Header="📋 Бронирования">
+                <DataGrid ItemsSource="{Binding MyBookings}" 
+                          AutoGenerateColumns="False"
+                          IsReadOnly="True"
+                          CanUserAddRows="False">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Статус" Binding="{Binding Статус}" Width="150"/>
+                        <DataGridTextColumn Header="Дата оформления" Binding="{Binding ДатаОформления}" Width="150"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</UserControl>

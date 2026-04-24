@@ -3,9 +3,9 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Microsoft.EntityFrameworkCore;
+using WpfApp1.Commands;
 using WpfApp1.Data;
 using WpfApp1.Models;
-using WpfApp1.Commands;
 
 namespace WpfApp1.ViewModels
 {
@@ -20,7 +20,11 @@ namespace WpfApp1.ViewModels
             ChildrenList = new ObservableCollection<Ребенок>();
             ParentsList = new ObservableCollection<Люди>();
 
-            
+            // Инициализация команд (методы без параметров)
+            LoadDataCommand = new RelayCommand(LoadData);
+            AddCommand = new RelayCommand(Add, CanAdd);
+            UpdateCommand = new RelayCommand(Update, CanUpdate);
+            DeleteCommand = new RelayCommand(Delete, CanDelete);
         }
 
         public ObservableCollection<Ребенок> ChildrenList { get; set; }
@@ -47,11 +51,12 @@ namespace WpfApp1.ViewModels
             ChildrenList.Clear();
             ParentsList.Clear();
 
-            // ИСПОЛЬЗУЕМ Ребенокs и Людиs (с суффиксом s!)
+            // Загружаем детей с навигацией на родителя
             var children = _context.Ребенокs
                 .Include(c => c.FkРодительNavigation)
                 .ToList();
 
+            // Загружаем только пользователей с ролью "родитель"
             var parents = _context.Людиs.Where(l => l.Роль == "родитель").ToList();
 
             foreach (var c in children) ChildrenList.Add(c);
@@ -60,7 +65,9 @@ namespace WpfApp1.ViewModels
 
         private void Add()
         {
-            if (SelectedChild == null || string.IsNullOrWhiteSpace(SelectedChild.Фио)) return;
+            if (SelectedChild == null || string.IsNullOrWhiteSpace(SelectedChild.Фио))
+                return;
+
             _context.Ребенокs.Add(SelectedChild);
             _context.SaveChanges();
             LoadData();
@@ -69,7 +76,9 @@ namespace WpfApp1.ViewModels
 
         private void Update()
         {
-            if (SelectedChild == null || SelectedChild.Id == 0) return;
+            if (SelectedChild == null || SelectedChild.Id == 0)
+                return;
+
             _context.Ребенокs.Update(SelectedChild);
             _context.SaveChanges();
             LoadData();
@@ -77,7 +86,9 @@ namespace WpfApp1.ViewModels
 
         private void Delete()
         {
-            if (SelectedChild == null || SelectedChild.Id == 0) return;
+            if (SelectedChild == null || SelectedChild.Id == 0)
+                return;
+
             _context.Ребенокs.Remove(SelectedChild);
             _context.SaveChanges();
             LoadData();
@@ -90,12 +101,26 @@ namespace WpfApp1.ViewModels
             OnPropertyChanged(nameof(SelectedChild));
         }
 
-        private bool CanAdd() => SelectedChild != null && !string.IsNullOrWhiteSpace(SelectedChild.Фио) && SelectedChild.FkРодитель > 0;
-        private bool CanUpdate() => SelectedChild != null && SelectedChild.Id > 0;
-        private bool CanDelete() => SelectedChild != null && SelectedChild.Id > 0;
+        private bool CanAdd()
+        {
+            return SelectedChild != null &&
+                   !string.IsNullOrWhiteSpace(SelectedChild.Фио) &&
+                   SelectedChild.FkРодитель > 0;
+        }
 
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        private bool CanUpdate()
+        {
+            return SelectedChild != null && SelectedChild.Id > 0;
+        }
+
+        private bool CanDelete()
+        {
+            return SelectedChild != null && SelectedChild.Id > 0;
+        }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }

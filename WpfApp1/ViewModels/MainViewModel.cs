@@ -1,55 +1,74 @@
-﻿using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
+﻿using System;
 using System.Windows.Input;
-using WpfApp1.Data;
-using WpfApp1.Models;
 using WpfApp1.Commands;
+using WpfApp1.Models;
 
 namespace WpfApp1.ViewModels
 {
-    public class MainViewModel : INotifyPropertyChanged
+    public class MainViewModel
     {
-        private readonly SanatoriumContext _context;
-
-        public MainViewModel(SanatoriumContext context)
-        {
-            _context = context;
-        }
+        public event EventHandler<string>? ViewRequested;
+        public Люди? CurrentUser { get; set; }
 
         public ICommand OpenPeopleCommand { get; }
         public ICommand OpenChildrenCommand { get; }
         public ICommand OpenBookingCommand { get; }
+        public ICommand OpenInstitutionsCommand { get; }
+        public ICommand OpenReportsCommand { get; }
+        public ICommand LogoutCommand { get; }
 
-        public event EventHandler<string> ViewRequested;
+        // Свойства для отображения
+        public string UserDisplayName => CurrentUser != null ?
+            $"👤 {CurrentUser.Фио}" : "Пользователь";
 
-        private void ShowView(string viewName)
+        public string UserRoleDisplay => CurrentUser != null ?
+            GetRoleName(CurrentUser.Роль) : "";
+
+        // Флаги видимости кнопок
+        public bool CanManageUsers => CurrentUser?.Роль == "администратор";
+        public bool CanViewChildren => CurrentUser?.Роль == "администратор" ||
+                                        CurrentUser?.Роль == "оператор" ||
+                                        CurrentUser?.Роль == "медработник" ||
+                                        CurrentUser?.Роль == "родитель";
+        public bool CanViewBookings => CurrentUser?.Роль == "администратор" ||
+                                        CurrentUser?.Роль == "оператор" ||
+                                        CurrentUser?.Роль == "родитель";
+        public bool CanManageInstitutions => CurrentUser?.Роль == "администратор" ||
+                                              CurrentUser?.Роль == "оператор";
+        public bool CanViewReports => CurrentUser?.Роль == "администратор" ||
+                                       CurrentUser?.Роль == "оператор";
+
+        public MainViewModel()
         {
-            ViewRequested?.Invoke(this, viewName);
+            OpenPeopleCommand = new RelayCommand(OpenPeople, () => CanManageUsers);
+            OpenChildrenCommand = new RelayCommand(OpenChildren, () => CanViewChildren);
+            OpenBookingCommand = new RelayCommand(OpenBooking, () => CanViewBookings);
+            OpenInstitutionsCommand = new RelayCommand(OpenInstitutions, () => CanManageInstitutions);
+            OpenReportsCommand = new RelayCommand(OpenReports, () => CanViewReports);
+            LogoutCommand = new RelayCommand(Logout);
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        private string GetRoleName(string role)
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-    }
-
-    
-    public class RelayCommand : ICommand
-    {
-        private readonly Action _execute;
-        private readonly Func<bool> _canExecute;
-
-        
-
-        public event EventHandler CanExecuteChanged
-        {
-            add { CommandManager.RequerySuggested += value; }
-            remove { CommandManager.RequerySuggested -= value; }
+            return role switch
+            {
+                "администратор" => "🔑 Администратор",
+                "оператор" => "📞 Оператор",
+                "медработник" => "🏥 Медработник",
+                "родитель" => "👨‍👩‍👧 Родитель",
+                _ => role
+            };
         }
 
-        public bool CanExecute(object parameter) => _canExecute == null || _canExecute();
-        public void Execute(object parameter) => _execute();
+        private void OpenPeople() => ViewRequested?.Invoke(this, "People");
+        private void OpenChildren() => ViewRequested?.Invoke(this, "Children");
+        private void OpenBooking() => ViewRequested?.Invoke(this, "Booking");
+        private void OpenInstitutions() => ViewRequested?.Invoke(this, "Institutions");
+        private void OpenReports() => ViewRequested?.Invoke(this, "Reports");
+
+        private void Logout()
+        {
+            System.Windows.Application.Current.Shutdown();
+        }
     }
 }

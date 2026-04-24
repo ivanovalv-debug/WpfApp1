@@ -4,9 +4,9 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Microsoft.EntityFrameworkCore;
+using WpfApp1.Commands;
 using WpfApp1.Data;
 using WpfApp1.Models;
-using WpfApp1.Commands;
 
 namespace WpfApp1.ViewModels
 {
@@ -23,6 +23,10 @@ namespace WpfApp1.ViewModels
             SessionsList = new ObservableCollection<Смены>();
             OperatorsList = new ObservableCollection<Люди>();
 
+            // Инициализация команд
+            LoadDataCommand = new RelayCommand(LoadData);
+            AddCommand = new RelayCommand(Add, CanAdd);
+            UpdateStatusCommand = new RelayCommand(UpdateStatus, CanUpdate);
         }
 
         public ObservableCollection<Бронирование> BookingsList { get; set; }
@@ -52,7 +56,6 @@ namespace WpfApp1.ViewModels
             SessionsList.Clear();
             OperatorsList.Clear();
 
-            // ИСПОЛЬЗУЕМ правильные имена DbSet с суффиксом s!
             var bookings = _context.Бронированиеs
                 .Include(b => b.FkРебенкаNavigation)
                 .Include(b => b.FkСменаNavigation)
@@ -71,10 +74,11 @@ namespace WpfApp1.ViewModels
 
         private void Add()
         {
-            if (SelectedBooking == null || SelectedBooking.FkРебенка == 0) return;
+            if (SelectedBooking == null || SelectedBooking.FkРебенка == 0)
+                return;
 
             SelectedBooking.Статус = "новая";
-            SelectedBooking.ДатаОформления = DateTime.Now;
+            SelectedBooking.ДатаОформления = DateTime.Now.Date; // .Date убирает время, если там DateOnly
 
             _context.Бронированиеs.Add(SelectedBooking);
             _context.SaveChanges();
@@ -83,17 +87,29 @@ namespace WpfApp1.ViewModels
 
         private void UpdateStatus()
         {
-            if (SelectedBooking == null || SelectedBooking.Id == 0) return;
+            if (SelectedBooking == null || SelectedBooking.Id == 0)
+                return;
+
             _context.Бронированиеs.Update(SelectedBooking);
             _context.SaveChanges();
             LoadData();
         }
 
-        private bool CanAdd() => SelectedBooking != null && SelectedBooking.FkРебенка > 0 && SelectedBooking.FkСмена > 0;
-        private bool CanUpdate() => SelectedBooking != null && SelectedBooking.Id > 0;
+        private bool CanAdd()
+        {
+            return SelectedBooking != null &&
+                   SelectedBooking.FkРебенка > 0 &&
+                   SelectedBooking.FkСмена > 0;
+        }
 
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        private bool CanUpdate()
+        {
+            return SelectedBooking != null && SelectedBooking.Id > 0;
+        }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
